@@ -29,7 +29,7 @@ public class Parser {
 				if (result.get("error")=="SUCCESS"){
 					System.out.println(result.get("result"));
 				}else{
-					System.out.println(result.get("error"));
+					System.err.println(result.get("error"));
 				}
 				sentence = new ArrayList<Token>();
 			}
