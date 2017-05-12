@@ -83,7 +83,8 @@ public class Parser {
 			result.put("index", String.valueOf(sent_index));
 			return result;
 		}else{
-				result.put("error", "it is not a leagal sentence at index " + sent_index);
+				System.out.println("error:  it is not a leagal sentence at index " + sent_index);
+				System.exit(0);
 		}
 		return result;
 	}
@@ -136,8 +137,8 @@ public class Parser {
 				if(compile.global_float_variable.keySet().contains(sentence.get(index).value)){
 					this.temp_map.put("result", String.valueOf(compile.global_float_variable.get(sentence.get(index).value)));
 				}else{
-					this.temp_map.put("error", "variable: '"+sentence.get(index).value + "' may not initial.");
-					return this.temp_map;
+					System.out.println("error:  variable: '"+sentence.get(index).value + "' may not initial.");
+                    System.exit(0);
 				}
 				this.temp_map.put("error", "SUCCESS");
 				this.temp_map.put("index", String.valueOf(++index));
@@ -166,14 +167,15 @@ public class Parser {
 				index = Integer.parseInt(this.temp_map.get("index"));
 				this.temp_map.put("index", String.valueOf(++index));
 				if (sentence.get(index).type != Scanner.Type.right_bracket) {
-					this.temp_map.put("error", "expect a '(' at index "+index);
-					return this.temp_map;
+					System.out.println("error:  expect a '(' at index "+index);
+                    System.exit(0);
 				}
 				Double value = Double.parseDouble(this.temp_map.get("result"));
 				this.temp_map.put("result", String.valueOf(value));
 				this.temp_map.put("error", "SUCCESS");
 			}else{
-				this.temp_map.put("error", "expect an ArithExpr at index "+index);
+				System.out.println("error:  expect an ArithExpr at index "+index);
+                System.exit(0);
 			}
 		}
 		// ArithExpr oper ArithExpr
@@ -203,22 +205,26 @@ public class Parser {
 							this.temp_map.put("error", "SUCCESS");
 						}else if(oper.equals("/")){
 							if (value2 == 0) {
-								this.temp_map.put("error", "Can not divide by zero at index" + index);
-								return this.temp_map;
+								System.out.println("error:  Can not divide by zero at index" + index);
+                                System.exit(0);
 							}
 							this.temp_map.put("result", String.valueOf(value1/value2));
 							this.temp_map.put("error", "SUCCESS");
 						}else{
-							this.temp_map.put("error", "oper not found at index" + index);
+							System.out.println("error:  oper not found at index" + index);
+                            System.exit(0);
 						}
 					}else{
-						this.temp_map.put("error", "expect an ArithExpr at index "+index);
+						System.out.println("error:  expect an ArithExpr at index "+index);
+                        System.exit(0);
 					}
 				}else{
-					this.temp_map.put("error", "expect an oper at index "+index);
+					System.out.println("error:  expect an oper at index "+index);
+                    System.exit(0);
 				}
 			}else{
-				this.temp_map.put("error", "expect an ArithExpr at index "+index);
+				System.out.println("error:  expect an ArithExpr at index "+index);
+                System.exit(0);
 			}
 		}
 		// BoolExpr ? ArithExpr : ArithExpr
@@ -246,16 +252,20 @@ public class Parser {
 								this.temp_map.put("error", "SUCCESS");
 							}
 						} else {
-							this.temp_map.put("error", "expect an ArithExpr at index " + index);
+                            System.out.println("error:  expect an ArithExpr at index " + index);
+                            System.exit(0);
 						}
 					} else {
-						this.temp_map.put("error", "expect a ':' at index " + index);
+                        System.out.println("error:  expect a ':' at index " + index);
+                        System.exit(0);
 					}
 				} else {
-					this.temp_map.put("error", "expect an ArithExpr at index " + index);
+                    System.out.println("error:  expect an ArithExpr at index " + index);
+                    System.exit(0);
 				}
 			}else{
-				this.temp_map.put("error", "expect a '?' at index "+index);
+				System.out.println("error:  expect a '?' at index "+index);
+                System.exit(0);
 			}
 		}
 		//  SingleFunc 
@@ -266,7 +276,8 @@ public class Parser {
 		else if(MultipleFunc(index).get("error")=="SUCCESS"){
 			return MultipleFunc(index);
 		}else{
-			this.temp_map.put("error", "expect an ArithExpr at index "+index);
+            System.out.println("error:  expect an ArithExpr at index "+index);
+            System.exit(0);
 		}
 		return this.temp_map;
 	}
@@ -284,8 +295,8 @@ public class Parser {
 				index = Integer.parseInt(isArithExpr.get("index"));
 				result.put("index", String.valueOf(++index));
 				if (sentence.get(index).type != Scanner.Type.right_bracket) {
-					result.put("error", "expect a ')' at index "+index);
-					return result;
+					System.out.println("error:  expect a ')' at index "+index);
+                    System.exit(0);
 				}
 				Double value = Double.parseDouble(isArithExpr.get("result"));
 				if(func.equals("cos")){
@@ -296,10 +307,12 @@ public class Parser {
 					result.put("error", "SUCCESS");
 				}
 			}else{
-				result.put("error", "expect an ArithExpr at index "+index);
+				System.out.println("error:  expect an ArithExpr at index "+index);
+                System.exit(0);
 			}
 		}else{
-			result.put("error", "expect a '(' at index "+index);
+			System.out.println("error:  expect a '(' at index "+index);
+            System.exit(0);
 		}
 		return result;
 	}
@@ -322,8 +335,8 @@ public class Parser {
 						index = Integer.parseInt(isArithExpr1.get("index"));
 						result.put("index", String.valueOf(++index));
 						if (sentence.get(index).type != Scanner.Type.right_bracket) {
-							result.put("error", "expect a ')' at index "+index);
-							return result;
+							System.out.println("error:  expect a ')' at index "+index);
+                            System.exit(0);
 						}
 						Double value1 = Double.parseDouble(isArithExpr1.get("result"));
 						Double value2 = Double.parseDouble(isArithExpr2.get("result"));
@@ -335,16 +348,20 @@ public class Parser {
 							result.put("error", "SUCCESS");
 						}
 					}else{
-						result.put("error", "expect an ArithExpr at index "+index);
+                        System.out.println("error:  expect an ArithExpr at index "+index);
+                        System.exit(0);
 					}
 				}else{
-					result.put("error", "expect a ',' at index "+index);
+                    System.out.println("error:  expect a ',' at index "+index);
+                    System.exit(0);
 				}
 			}else{
-				result.put("error", "expect an ArithExpr at index "+index);
+                System.out.println("error:  expect an ArithExpr at index "+index);
+                System.exit(0);
 			}
 		}else{
-			result.put("error", "expect a '(' at index "+index);
+			System.out.println("error:  expect a '(' at index "+index);
+            System.exit(0);
 		}
 		return result;
 	}
@@ -379,7 +396,8 @@ public class Parser {
 					result.put("result", String.valueOf(value));
 					result.put("error", "SUCCESS");
 				}else{
-					result.put("error", "expect a BoolExpr at index "+index);
+                    System.out.println("error:  expect a BoolExpr at index "+index);
+                    System.exit(0);
 				}
 		}
 		// ArithExpr compare_oper/bool_oper ArithExpr 
@@ -411,11 +429,13 @@ public class Parser {
 							result.put("result", String.valueOf(value1>=value2));
 							result.put("error", "SUCCESS");
 						}else{
-							result.put("error", "oper not found at index" + index);
+                            System.out.println("error:  oper not found at index" + index);
+							System.exit(0);
 						}
 					}
 					else{
-						result.put("error", "expect an BoolExpr at index "+index);
+                        System.out.println("error:  expect an BoolExpr at index "+index);
+                        System.exit(0);
 					}
 				}else if(sentence.get(index).type == Scanner.Type.bool_oper){
 					String oper = sentence.get(index).value;
@@ -433,14 +453,17 @@ public class Parser {
 							result.put("result", String.valueOf(value1||value2));
 							result.put("error", "SUCCESS");
 						}else{
-							result.put("error", "oper not found at index" + index);
+                            System.out.println("error:  oper not found at index" + index);
+                            System.exit(0);
 						}
 					}
 				}else{
-					result.put("error", "expect an oper at index "+index);
+                    System.out.println("error:  expect an oper at index "+index);
+                    System.exit(0);
 				}
 			}else{
-				result.put("error", "expect an BoolExpr at index "+index);
+                System.out.println("error:  expect an BoolExpr at index "+index);
+                System.exit(0);
 			}
 		}
 		// ! BoolExpr
@@ -459,10 +482,12 @@ public class Parser {
 				result.put("result", String.valueOf(value));
 				result.put("error", "SUCCESS");
 			}else{
-				result.put("error", "expect an BoolExpr at index "+index);
+                System.out.println("error:  expect an BoolExpr at index "+index);
+                System.exit(0);
 			}
 		}else{
-			result.put("error", "expect a BoolExpr at index "+index);
+            System.out.println("error:  expect a BoolExpr at index "+index);
+            System.exit(0);
 		}
 		
 		return result;
