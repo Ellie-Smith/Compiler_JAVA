@@ -12,6 +12,11 @@ import java.util.Map;
 public class Parser {
 	private final ArrayList<Token> tokens;
 	private ArrayList<Token> sentence = new ArrayList<Token>();
+
+	//存放临时的token
+	private static Map<String, String> temp_map = new HashMap<String,String>();
+	private static Map<String, String> temp_map1 = new HashMap<String,String>();
+	private static Map<String, String> temp_map2 = new HashMap<String,String>();
 	
 	public Parser(ArrayList<Token> tks){
 		this.tokens = tks;
@@ -46,7 +51,7 @@ public class Parser {
 	 */
 	public Map<String, String> parseSentence(int sent_index){
 		Map<String, String> result = initResult();
-		
+
 		//ArithExpr
 		if(ArithExpr(sent_index).get("error").equals("SUCCESS")){
 			return ArithExpr(sent_index);
@@ -59,6 +64,7 @@ public class Parser {
 		else if(sentence.size()-sent_index>=3 && sentence.get(sent_index).type == Scanner.Type.Variable &&
 				sentence.get(++sent_index).value == "=" &&
 				sentence.get(++sent_index).type == Scanner.Type.delete_symbol){
+			System.out.println("Hello!!!!");
 			compile.global_float_variable.remove(sentence.get((sent_index-2)).value);
 			result.put("error", "SUCCESS");
 			result.put("result", "true");
@@ -115,104 +121,104 @@ public class Parser {
 	 * 				- ArithExpr | BoolExpr ? ArithExpr : ArithExpr | SingleFunc | MultiFunc
 	 */
 	private Map<String, String> ArithExpr(int index){
-		Map<String, String> result = initResult();
+		this.temp_map = initResult();
 		
 		//Number
 		if(sentence.size()<3){
 			if(sentence.get(index).type==Scanner.Type.Number && sentence.size()-index==1){
-				result.put("result", String.valueOf(sentence.get(index).value));
-				result.put("error", "SUCCESS");
-				result.put("index", String.valueOf(++index));
-				return result;
+				this.temp_map.put("result", String.valueOf(sentence.get(index).value));
+				this.temp_map.put("error", "SUCCESS");
+				this.temp_map.put("index", String.valueOf(++index));
+				return this.temp_map;
 			}
 			//Variable
 			else if(sentence.get(index).type==Scanner.Type.Variable && sentence.size()-index==1){
 				if(compile.global_float_variable.keySet().contains(sentence.get(index).value)){
-					result.put("result", String.valueOf(compile.global_float_variable.get(sentence.get(index).value)));
+					this.temp_map.put("result", String.valueOf(compile.global_float_variable.get(sentence.get(index).value)));
 				}else{
-					result.put("error", "variable: '"+sentence.get(index).value + "' may not initial.");
-					return result;
+					this.temp_map.put("error", "variable: '"+sentence.get(index).value + "' may not initial.");
+					return this.temp_map;
 				}
-				result.put("error", "SUCCESS");
-				result.put("index", String.valueOf(++index));
-				return result;
+				this.temp_map.put("error", "SUCCESS");
+				this.temp_map.put("index", String.valueOf(++index));
+				return this.temp_map;
 			}
 			// - ArithExpr
 			else if(sentence.get(index).value=="-"){
 				index++;
-				Map<String, String> isArithExpr = ArithExpr(index);
-				if(isArithExpr.get("error").equals("SUCCESS")){
-					index = Integer.parseInt(isArithExpr.get("index"));
-					result.put("index", String.valueOf(index));
-					Double value = Double.parseDouble(isArithExpr.get("result"));
-					result.put("result", String.valueOf(-value));
-					result.put("error", "SUCCESS");
+				this.temp_map = ArithExpr(index);
+				if(this.temp_map.get("error").equals("SUCCESS")){
+					index = Integer.parseInt(this.temp_map.get("index"));
+					this.temp_map.put("index", String.valueOf(index));
+					Double value = Double.parseDouble(this.temp_map.get("result"));
+					this.temp_map.put("result", String.valueOf(-value));
+					this.temp_map.put("error", "SUCCESS");
 				}else{
-					result.put("error", "expect an ArithExpr at index "+index);
+					this.temp_map.put("error", "expect an ArithExpr at index "+index);
 				}
 			}
 		}
 		// ( ArithExpr ) 
 		else if(sentence.get(index).type==Scanner.Type.left_bracket){
 			index++;
-			Map<String, String> isArithExpr = ArithExpr(index);
-			if(isArithExpr.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(isArithExpr.get("index"));
-				result.put("index", String.valueOf(++index));
+			this.temp_map = ArithExpr(index);
+			if(this.temp_map.get("error").equals("SUCCESS")){
+				index = Integer.parseInt(this.temp_map.get("index"));
+				this.temp_map.put("index", String.valueOf(++index));
 				if (sentence.get(index).type != Scanner.Type.right_bracket) {
-					result.put("error", "expect a '(' at index "+index);
-					return result;
+					this.temp_map.put("error", "expect a '(' at index "+index);
+					return this.temp_map;
 				}
-				Double value = Double.parseDouble(isArithExpr.get("result"));
-				result.put("result", String.valueOf(value));
-				result.put("error", "SUCCESS");
+				Double value = Double.parseDouble(this.temp_map.get("result"));
+				this.temp_map.put("result", String.valueOf(value));
+				this.temp_map.put("error", "SUCCESS");
 			}else{
-				result.put("error", "expect an ArithExpr at index "+index);
+				this.temp_map.put("error", "expect an ArithExpr at index "+index);
 			}
 		}
 		// ArithExpr oper ArithExpr
 		else if(ArithExpr(index).get("error")=="SUCCESS"){
 			index++;
-			Map<String, String> isArithExpr1 = ArithExpr(index);
-			if(isArithExpr1.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(isArithExpr1.get("index"));
+			this.temp_map1 = ArithExpr(index);
+			if(this.temp_map1.get("error").equals("SUCCESS")){
+				index = Integer.parseInt(this.temp_map1.get("index"));
 				if(sentence.get(index).type == Scanner.Type.oper){
 					String oper = sentence.get(index).value;
 					index++;
-					Map<String, String> isArithExpr2 = ArithExpr(index);
-					if(isArithExpr2.get("error").equals("SUCCESS")){
-						index = Integer.parseInt(isArithExpr1.get("index"));
-						result.put("index", String.valueOf(index));
+					this.temp_map2 = ArithExpr(index);
+					if(this.temp_map2.get("error").equals("SUCCESS")){
+						index = Integer.parseInt(this.temp_map2.get("index"));
+						this.temp_map.put("index", String.valueOf(index));
 						
-						Double value1 = Double.parseDouble(isArithExpr1.get("result"));
-						Double value2 = Double.parseDouble(isArithExpr2.get("result"));
+						Double value1 = Double.parseDouble(this.temp_map1.get("result"));
+						Double value2 = Double.parseDouble(this.temp_map2.get("result"));
 						if(oper.equals("+")){
-							result.put("result", String.valueOf(value1+value2));
-							result.put("error", "SUCCESS");
+							this.temp_map.put("result", String.valueOf(value1+value2));
+							this.temp_map.put("error", "SUCCESS");
 						}else if(oper.equals("-")){
-							result.put("result", String.valueOf(value1-value2));
-							result.put("error", "SUCCESS");
+							this.temp_map.put("result", String.valueOf(value1-value2));
+							this.temp_map.put("error", "SUCCESS");
 						}else if (oper.equals("*")){
-							result.put("result", String.valueOf(value1*value2));
-							result.put("error", "SUCCESS");
+							this.temp_map.put("result", String.valueOf(value1*value2));
+							this.temp_map.put("error", "SUCCESS");
 						}else if(oper.equals("/")){
 							if (value2 == 0) {
-								result.put("error", "Can not divide by zero at index" + index);
-								return result;
+								this.temp_map.put("error", "Can not divide by zero at index" + index);
+								return this.temp_map;
 							}
-							result.put("result", String.valueOf(value1/value2));
-							result.put("error", "SUCCESS");
+							this.temp_map.put("result", String.valueOf(value1/value2));
+							this.temp_map.put("error", "SUCCESS");
 						}else{
-							result.put("error", "oper not found at index" + index);
+							this.temp_map.put("error", "oper not found at index" + index);
 						}
 					}else{
-						result.put("error", "expect an ArithExpr at index "+index);
+						this.temp_map.put("error", "expect an ArithExpr at index "+index);
 					}
 				}else{
-					result.put("error", "expect an oper at index "+index);
+					this.temp_map.put("error", "expect an oper at index "+index);
 				}
 			}else{
-				result.put("error", "expect an ArithExpr at index "+index);
+				this.temp_map.put("error", "expect an ArithExpr at index "+index);
 			}
 		}
 		// BoolExpr ? ArithExpr : ArithExpr
@@ -220,36 +226,36 @@ public class Parser {
 			String condition = BoolExpr(index).get("result");
 			index++;
 			if(sentence.get(index).value=="?"){
-				Map<String, String> isArithExpr1 = ArithExpr(index);
-				if (isArithExpr1.get("error").equals("SUCCESS")) {
-					index = Integer.parseInt(isArithExpr1.get("index"));
+				this.temp_map1 = ArithExpr(index);
+				if (this.temp_map1.get("error").equals("SUCCESS")) {
+					index = Integer.parseInt(this.temp_map1.get("index"));
 					if (sentence.get(index).type == Scanner.Type.colon) {
 						index++;
-						Map<String, String> isArithExpr2 = ArithExpr(index);
-						if (isArithExpr2.get("error").equals("SUCCESS")) {
-							index = Integer.parseInt(isArithExpr1.get("index"));
-							result.put("index", String.valueOf(index));
+						this.temp_map2 = ArithExpr(index);
+						if (this.temp_map2.get("error").equals("SUCCESS")) {
+							index = Integer.parseInt(this.temp_map1.get("index"));
+							this.temp_map.put("index", String.valueOf(index));
 
-							Double value1 = Double.parseDouble(isArithExpr1.get("result"));
-							Double value2 = Double.parseDouble(isArithExpr2.get("result"));
+							Double value1 = Double.parseDouble(this.temp_map1.get("result"));
+							Double value2 = Double.parseDouble(this.temp_map2.get("result"));
 							if (condition.toLowerCase().equals("true")) {
-								result.put("result", String.valueOf(value1));
-								result.put("error", "SUCCESS");
+								this.temp_map.put("result", String.valueOf(value1));
+								this.temp_map.put("error", "SUCCESS");
 							} else {
-								result.put("result", String.valueOf(value2));
-								result.put("error", "SUCCESS");
+								this.temp_map.put("result", String.valueOf(value2));
+								this.temp_map.put("error", "SUCCESS");
 							}
 						} else {
-							result.put("error", "expect an ArithExpr at index " + index);
+							this.temp_map.put("error", "expect an ArithExpr at index " + index);
 						}
 					} else {
-						result.put("error", "expect a ':' at index " + index);
+						this.temp_map.put("error", "expect a ':' at index " + index);
 					}
 				} else {
-					result.put("error", "expect an ArithExpr at index " + index);
+					this.temp_map.put("error", "expect an ArithExpr at index " + index);
 				}
 			}else{
-				result.put("error", "expect a '?' at index "+index);
+				this.temp_map.put("error", "expect a '?' at index "+index);
 			}
 		}
 		//  SingleFunc 
@@ -260,9 +266,9 @@ public class Parser {
 		else if(MultipleFunc(index).get("error")=="SUCCESS"){
 			return MultipleFunc(index);
 		}else{
-			result.put("error", "expect an ArithExpr at index "+index);
+			this.temp_map.put("error", "expect an ArithExpr at index "+index);
 		}
-		return result;
+		return this.temp_map;
 	}
 	
 	/**
@@ -463,10 +469,6 @@ public class Parser {
 	}
 	
 	private Map<String, String> initResult(){
-		Map<String, String> result = new HashMap<String,String>();
-		result.put("result", "");
-		result.put("error", "");
-		result.put("index", "");
-		return result;
+		return new HashMap<String,String>(){{put("result", "");put("error", "");put("index", "");}};
 	}
 }
