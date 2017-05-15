@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.lmz.RPN.Calculator2;
+
 /**
  * 
  * @author Ellie
@@ -25,7 +27,7 @@ public class Parser {
 	/**
 	 * 一组tokens可能包含多条语句，需要识别出每一条语句进行解析
 	 */
-	public Map<String, String> parse(){
+	public Map<String, String> parse() throws Exception{
 		int index = 0;
 		Map<String, String> result = new HashMap<String,String>();
 		while (index < tokens.size()){
@@ -49,8 +51,25 @@ public class Parser {
 	 * 解析Sentence语句
 	 * Sentence -> Variable = ArithExpr | Variable = [] | ArithExpr | IfSentence
 	 */
-	public Map<String, String> parseSentence(int sent_index){
+	public Map<String, String> parseSentence(int sent_index) throws Exception{
 		Map<String, String> result = initResult();
+		if(sentence.size()-sent_index==1){
+			if (sentence.get(sent_index).type==Scanner.Type.Number){
+				result.put("result",sentence.get(sent_index).value);
+				result.put("error","SUCCESS");
+			}else if (sentence.get(sent_index).type==Scanner.Type.Variable){
+				result.put("result",String.valueOf(compile.global_float_variable.get(sentence.get(sent_index).value)));
+				result.put("error","SUCCESS");
+			}else if (sentence.get(sent_index).type==Scanner.Type.EndSymbol){
+				result.put("result","");
+				result.put("error","SUCCESS");
+			}else{
+				System.out.println("error:  it is not a leagal sentence at index " + sent_index);
+				System.exit(0);
+			}
+			return result;
+		}
+
 		int sent_index1 = sent_index;
 		String grammar_type = "";
 		for(Token t:sentence){
@@ -113,7 +132,7 @@ public class Parser {
 	 * @param index
 	 * @return
 	 */
-	private Map<String, String> IfSentence(int index){
+	private Map<String, String> IfSentence(int index) throws Exception{
 		Map<String, String> result = initResult();
 		if(sentence.get(index).value.toLowerCase().equals("if")){
 			index++;
@@ -135,8 +154,31 @@ public class Parser {
 		return result;
 	}
 
-	private Map<String, String> ArithExpr(int index){
-		return null;
+	/**
+	 * 算术表达式
+	 * @param index
+	 * @return
+	 * @throws Exception
+	 */
+	private Map<String, String> ArithExpr(int index) throws Exception{
+		this.temp_map = initResult();
+		String s = "";
+		while(index < sentence.size() && sentence.get(index).type != Scanner.Type.EndSymbol){
+			if (sentence.get(index).type == Scanner.Type.Variable){
+				try{
+					s += compile.global_float_variable.get(sentence.get(index).value);
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+			}else{
+				s += sentence.get(index).value;
+			}
+			index++;
+		}
+		this.temp_map.put("result",String.valueOf(Calculator2(s)));
+		this.temp_map.put("error","SUCCESS");
+		this.temp_map.put("index",String.valueOf(index));
+		return this.temp_map;
 	}
 
 
