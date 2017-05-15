@@ -269,9 +269,9 @@ public class Scanner {
 				
 				//若为空，则到了句尾，解析这条语句
 				if(this.curType == Type.EndSymbol){
-					for(Token t:tks){
-						System.out.println(t.type + "    " + t.value);
-					}
+//					for(Token t:tks){
+//						System.out.println(t.type + "    " + t.value);
+//					}
 					Parser parser = new Parser(tks);
 					parser.parse();
 					tks = new ArrayList<Token>();

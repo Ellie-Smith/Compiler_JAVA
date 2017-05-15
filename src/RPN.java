@@ -125,7 +125,7 @@ public class RPN
         while (stack.size() > 0) {
             polish.offer(String.valueOf(stack.pop()));
         }
-        System.out.println("Calcstra Queue:" + polish.toString());
+//        System.out.println("Calcstra Queue:" + polish.toString());
 
         return CalcstraWithQueue(polish);
     }
