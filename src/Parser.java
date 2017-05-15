@@ -2,18 +2,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.lmz.RPN.Calculator2;
+
 
 /**
  * 
  * @author Ellie
  * @date 2017/5/1
- * 解析各个命令单元
+ * 解析各个命令单元，进行语法检查，若语法错误就报错。否则编译运行
  *
  */
 public class Parser {
 	private final ArrayList<Token> tokens;
 	private ArrayList<Token> sentence = new ArrayList<Token>();
+	private RPN rpn = new RPN();
 
 	//存放临时的token
 	private static Map<String, String> temp_map = new HashMap<String,String>();
@@ -216,7 +217,7 @@ public class Parser {
 			}
 			index++;
 		}
-		this.temp_map.put("result",String.valueOf(Calculator2(s)));
+		this.temp_map.put("result",String.valueOf(rpn.Calculator2(s)));
 		this.temp_map.put("error","SUCCESS");
 		this.temp_map.put("index",String.valueOf(index));
 		return this.temp_map;

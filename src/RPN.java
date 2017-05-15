@@ -1,13 +1,16 @@
 /**
  * Created by Administrator on 2017/5/12.
  */
-package org.lmz;
+
 
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.Stack;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * 将算术表达式转换成逆波兰表达式（后缀表达式）
+ */
 public class RPN
 {
 

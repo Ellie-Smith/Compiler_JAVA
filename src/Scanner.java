@@ -4,7 +4,9 @@ import java.util.ArrayList;
  * 
  * @author Ellie
  * @date 2017/5/1
- * 扫描语句，将输入流转换成命令单元
+ * 扫描语句，将输入流转换成命令单元:
+ * 例如：输入-- a = 1
+ * 		 输出-- variable  assign_oper  number
  *
  */
 public class Scanner {
