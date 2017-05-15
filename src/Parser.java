@@ -51,39 +51,58 @@ public class Parser {
 	 */
 	public Map<String, String> parseSentence(int sent_index){
 		Map<String, String> result = initResult();
+		int sent_index1 = sent_index;
+		String grammar_type = "";
+		for(Token t:sentence){
+			if (t.type==Scanner.Type.oper){
+				grammar_type = "oper";
+				break;
+			}else if(t.type==Scanner.Type.assign_oper){
+				grammar_type = "assign";
+				break;
+			}else if(t.value.equals("if")){
+				grammar_type = "if sentence";
+				break;
+			}
+		}
 
 		//ArithExpr
-		if(ArithExpr(sent_index).get("error").equals("SUCCESS")){
-			return ArithExpr(sent_index);
+		if(grammar_type.equals("oper") && ArithExpr(sent_index1).get("error").equals("SUCCESS")){
+			return ArithExpr(sent_index1);
 		}
 		//IfSentence
-		else if(IfSentence(sent_index).get("error").equals("SUCCESS")){
-			return IfSentence(sent_index);
+		if(grammar_type.equals("if sentence") && IfSentence(sent_index1).get("error").equals("SUCCESS")){
+			return IfSentence(sent_index1);
 		}
+
+
 		//Variable = []
-		else if(sentence.size()-sent_index>=3 && sentence.get(sent_index).type == Scanner.Type.Variable &&
-				sentence.get(++sent_index).value == "=" &&
-				sentence.get(++sent_index).type == Scanner.Type.delete_symbol){
-			System.out.println("Hello!!!!");
-			compile.global_float_variable.remove(sentence.get((sent_index-2)).value);
+		if(grammar_type.equals("assign") && sentence.size()-sent_index1>=3 && sentence.get(sent_index1).type == Scanner.Type.Variable &&
+				sentence.get(++sent_index1).value.equals("=") &&
+				sentence.get(++sent_index1).type == Scanner.Type.delete_symbol){
+
+			compile.global_float_variable.remove(sentence.get((sent_index1-2)).value);
 			result.put("error", "SUCCESS");
 			result.put("result", "true");
-			result.put("index", String.valueOf(sent_index));
+			result.put("index", String.valueOf(sent_index1));
 			return result;
 		}
-		//Variable = ArithExpr
-		else if(sentence.size()-sent_index>=3 && sentence.get(sent_index).type == Scanner.Type.Variable &&
-				sentence.get(++sent_index).value == "=" && ArithExpr(++sent_index).get("error").equals("SUCCESS")){
 
-			String variable = sentence.get((sent_index-2)).value;
-			String value = ArithExpr(sent_index).get("result");
+		//Variable = ArithExpr
+		sent_index1 = sent_index;
+		if(grammar_type.equals("assign") && sentence.size()-sent_index1>=3 && sentence.get(sent_index1).type == Scanner.Type.Variable &&
+				sentence.get(++sent_index1).value.equals("=") && ArithExpr(++sent_index1).get("error").equals("SUCCESS")){
+
+			String variable = sentence.get((sent_index1-2)).value;
+
+			String value = ArithExpr(sent_index1).get("result");
 			compile.global_float_variable.put(variable,Float.parseFloat(value));
 			result.put("error", "SUCCESS");
 			result.put("result", "true");
-			result.put("index", String.valueOf(sent_index));
+			result.put("index", String.valueOf(sent_index1));
 			return result;
 		}else{
-				System.out.println("error:  it is not a leagal sentence at index " + sent_index);
+				System.out.println("error1:  it is not a leagal sentence at index " + sent_index1);
 				System.exit(0);
 		}
 		return result;
@@ -103,7 +122,7 @@ public class Parser {
 				Map<String, String> isArithExpr = ArithExpr(index);
 				if(isArithExpr.get("error").equals("SUCCESS")){
 					index = Integer.parseInt(isArithExpr.get("index"));
-					
+
 				}else{
 					result.put("error", "expect an ArithExpr at index " + index);
 				}
@@ -115,384 +134,14 @@ public class Parser {
 		}
 		return result;
 	}
-	
-	/**
-	 * ArithExpr -> Number | Variable | ( ArithExpr ) | ArithExpr + ArithExpr | ArithExpr - ArithExpr | 
-	 * 				ArithExpr * ArithExpr | ArithExpr / ArithExpr | ArithExpr ^ ArithExpr |
-	 * 				- ArithExpr | BoolExpr ? ArithExpr : ArithExpr | SingleFunc | MultiFunc
-	 */
+
 	private Map<String, String> ArithExpr(int index){
-		this.temp_map = initResult();
-		
-		//Number
-		if(sentence.size()<3){
-			if(sentence.get(index).type==Scanner.Type.Number && sentence.size()-index==1){
-				this.temp_map.put("result", String.valueOf(sentence.get(index).value));
-				this.temp_map.put("error", "SUCCESS");
-				this.temp_map.put("index", String.valueOf(++index));
-				return this.temp_map;
-			}
-			//Variable
-			else if(sentence.get(index).type==Scanner.Type.Variable && sentence.size()-index==1){
-				if(compile.global_float_variable.keySet().contains(sentence.get(index).value)){
-					this.temp_map.put("result", String.valueOf(compile.global_float_variable.get(sentence.get(index).value)));
-				}else{
-					System.out.println("error:  variable: '"+sentence.get(index).value + "' may not initial.");
-                    System.exit(0);
-				}
-				this.temp_map.put("error", "SUCCESS");
-				this.temp_map.put("index", String.valueOf(++index));
-				return this.temp_map;
-			}
-			// - ArithExpr
-			else if(sentence.get(index).value=="-"){
-				index++;
-				this.temp_map = ArithExpr(index);
-				if(this.temp_map.get("error").equals("SUCCESS")){
-					index = Integer.parseInt(this.temp_map.get("index"));
-					this.temp_map.put("index", String.valueOf(index));
-					Double value = Double.parseDouble(this.temp_map.get("result"));
-					this.temp_map.put("result", String.valueOf(-value));
-					this.temp_map.put("error", "SUCCESS");
-				}else{
-					this.temp_map.put("error", "expect an ArithExpr at index "+index);
-				}
-			}
-		}
-		// ( ArithExpr ) 
-		else if(sentence.get(index).type==Scanner.Type.left_bracket){
-			index++;
-			this.temp_map = ArithExpr(index);
-			if(this.temp_map.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(this.temp_map.get("index"));
-				this.temp_map.put("index", String.valueOf(++index));
-				if (sentence.get(index).type != Scanner.Type.right_bracket) {
-					System.out.println("error:  expect a '(' at index "+index);
-                    System.exit(0);
-				}
-				Double value = Double.parseDouble(this.temp_map.get("result"));
-				this.temp_map.put("result", String.valueOf(value));
-				this.temp_map.put("error", "SUCCESS");
-			}else{
-				System.out.println("error:  expect an ArithExpr at index "+index);
-                System.exit(0);
-			}
-		}
-		// ArithExpr oper ArithExpr
-		else if(ArithExpr(index).get("error")=="SUCCESS"){
-			index++;
-			this.temp_map1 = ArithExpr(index);
-			if(this.temp_map1.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(this.temp_map1.get("index"));
-				if(sentence.get(index).type == Scanner.Type.oper){
-					String oper = sentence.get(index).value;
-					index++;
-					this.temp_map2 = ArithExpr(index);
-					if(this.temp_map2.get("error").equals("SUCCESS")){
-						index = Integer.parseInt(this.temp_map2.get("index"));
-						this.temp_map.put("index", String.valueOf(index));
-						
-						Double value1 = Double.parseDouble(this.temp_map1.get("result"));
-						Double value2 = Double.parseDouble(this.temp_map2.get("result"));
-						if(oper.equals("+")){
-							this.temp_map.put("result", String.valueOf(value1+value2));
-							this.temp_map.put("error", "SUCCESS");
-						}else if(oper.equals("-")){
-							this.temp_map.put("result", String.valueOf(value1-value2));
-							this.temp_map.put("error", "SUCCESS");
-						}else if (oper.equals("*")){
-							this.temp_map.put("result", String.valueOf(value1*value2));
-							this.temp_map.put("error", "SUCCESS");
-						}else if(oper.equals("/")){
-							if (value2 == 0) {
-								System.out.println("error:  Can not divide by zero at index" + index);
-                                System.exit(0);
-							}
-							this.temp_map.put("result", String.valueOf(value1/value2));
-							this.temp_map.put("error", "SUCCESS");
-						}else{
-							System.out.println("error:  oper not found at index" + index);
-                            System.exit(0);
-						}
-					}else{
-						System.out.println("error:  expect an ArithExpr at index "+index);
-                        System.exit(0);
-					}
-				}else{
-					System.out.println("error:  expect an oper at index "+index);
-                    System.exit(0);
-				}
-			}else{
-				System.out.println("error:  expect an ArithExpr at index "+index);
-                System.exit(0);
-			}
-		}
-		// BoolExpr ? ArithExpr : ArithExpr
-		else if(BoolExpr(index).get("error")=="SUCCESS"){
-			String condition = BoolExpr(index).get("result");
-			index++;
-			if(sentence.get(index).value=="?"){
-				this.temp_map1 = ArithExpr(index);
-				if (this.temp_map1.get("error").equals("SUCCESS")) {
-					index = Integer.parseInt(this.temp_map1.get("index"));
-					if (sentence.get(index).type == Scanner.Type.colon) {
-						index++;
-						this.temp_map2 = ArithExpr(index);
-						if (this.temp_map2.get("error").equals("SUCCESS")) {
-							index = Integer.parseInt(this.temp_map1.get("index"));
-							this.temp_map.put("index", String.valueOf(index));
+		return null;
+	}
 
-							Double value1 = Double.parseDouble(this.temp_map1.get("result"));
-							Double value2 = Double.parseDouble(this.temp_map2.get("result"));
-							if (condition.toLowerCase().equals("true")) {
-								this.temp_map.put("result", String.valueOf(value1));
-								this.temp_map.put("error", "SUCCESS");
-							} else {
-								this.temp_map.put("result", String.valueOf(value2));
-								this.temp_map.put("error", "SUCCESS");
-							}
-						} else {
-                            System.out.println("error:  expect an ArithExpr at index " + index);
-                            System.exit(0);
-						}
-					} else {
-                        System.out.println("error:  expect a ':' at index " + index);
-                        System.exit(0);
-					}
-				} else {
-                    System.out.println("error:  expect an ArithExpr at index " + index);
-                    System.exit(0);
-				}
-			}else{
-				System.out.println("error:  expect a '?' at index "+index);
-                System.exit(0);
-			}
-		}
-		//  SingleFunc 
-		else if(SingleFunc(index).get("error")=="SUCCESS"){
-			return SingleFunc(index);
-		}
-		//  MultiFunc
-		else if(MultipleFunc(index).get("error")=="SUCCESS"){
-			return MultipleFunc(index);
-		}else{
-            System.out.println("error:  expect an ArithExpr at index "+index);
-            System.exit(0);
-		}
-		return this.temp_map;
-	}
-	
-	/**
-	 * SingleFunc -> type.single_function ( ArithExpr )
-	 */
-	private Map<String, String> SingleFunc(int index) {
-		Map<String, String> result = initResult();
-		String func = sentence.get(index).value;
-		if(sentence.get(++index).type == Scanner.Type.left_bracket){
-			index++;
-			Map<String, String> isArithExpr = ArithExpr(index);
-			if(isArithExpr.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(isArithExpr.get("index"));
-				result.put("index", String.valueOf(++index));
-				if (sentence.get(index).type != Scanner.Type.right_bracket) {
-					System.out.println("error:  expect a ')' at index "+index);
-                    System.exit(0);
-				}
-				Double value = Double.parseDouble(isArithExpr.get("result"));
-				if(func.equals("cos")){
-					result.put("result", String.valueOf(Math.cos(value)));
-					result.put("error", "SUCCESS");
-				}else{
-					result.put("result", String.valueOf(Math.sin(value)));
-					result.put("error", "SUCCESS");
-				}
-			}else{
-				System.out.println("error:  expect an ArithExpr at index "+index);
-                System.exit(0);
-			}
-		}else{
-			System.out.println("error:  expect a '(' at index "+index);
-            System.exit(0);
-		}
-		return result;
-	}
-	
-	/**
-	 * MultipleFunc -> type.multiple_function ( ArithExpr, ArithExpr )
-	 */
-	private Map<String, String> MultipleFunc(int index){
-		Map<String, String> result = initResult();
-		String func = sentence.get(index).value;
-		if(sentence.get(++index).type == Scanner.Type.left_bracket){
-			index++;
-			Map<String, String> isArithExpr1 = ArithExpr(index);
-			if(isArithExpr1.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(isArithExpr1.get("index"));
-				if(sentence.get(index).type == Scanner.Type.comma){
-					index++;
-					Map<String, String> isArithExpr2 = ArithExpr(index);
-					if(isArithExpr2.get("error").equals("SUCCESS")){
-						index = Integer.parseInt(isArithExpr1.get("index"));
-						result.put("index", String.valueOf(++index));
-						if (sentence.get(index).type != Scanner.Type.right_bracket) {
-							System.out.println("error:  expect a ')' at index "+index);
-                            System.exit(0);
-						}
-						Double value1 = Double.parseDouble(isArithExpr1.get("result"));
-						Double value2 = Double.parseDouble(isArithExpr2.get("result"));
-						if(func.equals("max")){
-							result.put("result", value1>value2?String.valueOf(value1):String.valueOf(value2));
-							result.put("error", "SUCCESS");
-						}else{
-							result.put("result", value1>value2?String.valueOf(value2):String.valueOf(value1));
-							result.put("error", "SUCCESS");
-						}
-					}else{
-                        System.out.println("error:  expect an ArithExpr at index "+index);
-                        System.exit(0);
-					}
-				}else{
-                    System.out.println("error:  expect a ',' at index "+index);
-                    System.exit(0);
-				}
-			}else{
-                System.out.println("error:  expect an ArithExpr at index "+index);
-                System.exit(0);
-			}
-		}else{
-			System.out.println("error:  expect a '(' at index "+index);
-            System.exit(0);
-		}
-		return result;
-	}
-	
 
-	/**
-	 * BoolExpr -> true | false | ( BoolExpr ) | ArithExpr == ArithExpr | ArithExpr != ArithExpr | 
-	 * 			   ArithExpr < ArithExpr | ArithExpr > ArithExpr | ArithExpr <= ArithExpr |
-	 * 			   ArithExpr >= ArithExpr | ArithExpr && ArithExpr | ArithExpr || ArithExpr |
-	 * 			   ! BoolExpr
-	 */
-	private Map<String, String> BoolExpr(int index){
-		Map<String, String> result = initResult();
-		if(sentence.get(index).type==Scanner.Type.Bool){
-			result.put("result", sentence.get(index).value);
-			result.put("error", "SUCCESS");
-			result.put("index", String.valueOf(++index));
-			return result;
-		}
-		// ( BoolExpr )
-		else if(sentence.get(index).type == Scanner.Type.left_bracket){
-				index++;
-				Map<String, String> isBoolExpr = BoolExpr(index);
-				if(isBoolExpr.get("error").equals("SUCCESS")){
-					index = Integer.parseInt(isBoolExpr.get("index"));
-					result.put("index", String.valueOf(++index));
-					if (sentence.get(index).type != Scanner.Type.right_bracket) {
-						result.put("error", "expect a ')' at index "+index);
-						return result;
-					}
-					String value = isBoolExpr.get("result");
-					result.put("result", String.valueOf(value));
-					result.put("error", "SUCCESS");
-				}else{
-                    System.out.println("error:  expect a BoolExpr at index "+index);
-                    System.exit(0);
-				}
-		}
-		// ArithExpr compare_oper/bool_oper ArithExpr 
-		else if(BoolExpr(index).get("error")=="SUCCESS"){
-			index++;
-			Map<String, String> isBoolExpr1 = BoolExpr(index);
-			if(isBoolExpr1.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(isBoolExpr1.get("index"));
-				
-				if(sentence.get(index).type == Scanner.Type.compare_oper){
-					String oper = sentence.get(index).value;
-					index++;
-					Map<String, String> isBoolExpr2 = ArithExpr(index);
-					if(isBoolExpr2.get("error").equals("SUCCESS")){
-						index = Integer.parseInt(isBoolExpr2.get("index"));
-						result.put("index", String.valueOf(index));
-						Double value1 = Double.parseDouble(isBoolExpr1.get("result"));
-						Double value2 = Double.parseDouble(isBoolExpr2.get("result"));
-						if(oper.equals(">")){
-							result.put("result", String.valueOf(value1>value2));
-							result.put("error", "SUCCESS");
-						}else if(oper.equals("<")){
-							result.put("result", String.valueOf(value1<value2));
-							result.put("error", "SUCCESS");
-						}else if (oper.equals("<=")){
-							result.put("result", String.valueOf(value1<=value2));
-							result.put("error", "SUCCESS");
-						}else if(oper.equals(">=")){
-							result.put("result", String.valueOf(value1>=value2));
-							result.put("error", "SUCCESS");
-						}else{
-                            System.out.println("error:  oper not found at index" + index);
-							System.exit(0);
-						}
-					}
-					else{
-                        System.out.println("error:  expect an BoolExpr at index "+index);
-                        System.exit(0);
-					}
-				}else if(sentence.get(index).type == Scanner.Type.bool_oper){
-					String oper = sentence.get(index).value;
-					index++;
-					Map<String, String> isBoolExpr2 = ArithExpr(index);
-					if(isBoolExpr2.get("error").equals("SUCCESS")){
-						index = Integer.parseInt(isBoolExpr2.get("index"));
-						result.put("index", String.valueOf(index));
-						Boolean value1 = isBoolExpr1.get("result").toLowerCase().equals("true")?true:false;
-						Boolean value2 = isBoolExpr2.get("result").toLowerCase().equals("true")?true:false;
-						if(oper.equals("&&")){
-							result.put("result", String.valueOf(value1&&value2));
-							result.put("error", "SUCCESS");
-						}else if(oper.equals("||")){
-							result.put("result", String.valueOf(value1||value2));
-							result.put("error", "SUCCESS");
-						}else{
-                            System.out.println("error:  oper not found at index" + index);
-                            System.exit(0);
-						}
-					}
-				}else{
-                    System.out.println("error:  expect an oper at index "+index);
-                    System.exit(0);
-				}
-			}else{
-                System.out.println("error:  expect an BoolExpr at index "+index);
-                System.exit(0);
-			}
-		}
-		// ! BoolExpr
-		else if(sentence.get(index).value=="!"){
-			index++;
-			Map<String, String> isBoolExpr = BoolExpr(index);
-			if(isBoolExpr.get("error").equals("SUCCESS")){
-				index = Integer.parseInt(isBoolExpr.get("index"));
-				result.put("index", String.valueOf(index));
-				String value = isBoolExpr.get("result");
-				if(value.toLowerCase().equals("true")){
-					value="false";
-				}else{
-					value="true";
-				}
-				result.put("result", String.valueOf(value));
-				result.put("error", "SUCCESS");
-			}else{
-                System.out.println("error:  expect an BoolExpr at index "+index);
-                System.exit(0);
-			}
-		}else{
-            System.out.println("error:  expect a BoolExpr at index "+index);
-            System.exit(0);
-		}
-		
-		return result;
-	}
-	
+
+
 	private Map<String, String> initResult(){
 		return new HashMap<String,String>(){{put("result", "");put("error", "");put("index", "");}};
 	}
