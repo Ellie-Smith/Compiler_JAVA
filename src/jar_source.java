@@ -43,7 +43,7 @@ public class jar_source {
             ++currentPos;
             return currentChar();
         }else{
-            int a = 5555;
+            int a = 55556;
             return '~';
         }
 
