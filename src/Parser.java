@@ -30,10 +30,12 @@ public class Parser {
 	 */
 	public Map<String, String> parse() throws Exception{
 		int index = 0;
+		String value_result = "";
 		Map<String, String> result = new HashMap<String,String>();
 		while (index < tokens.size()){
 			if(tokens.get(index).type==Scanner.Type.EndSymbol && sentence.size()>0){
 				result = parseSentence(0);
+				value_result += result.get("result")+" ";
 				if (result.get("error")=="SUCCESS" && result.get("execute_result").equals("")){
 					System.out.println("-------------------------------------------");
 					System.out.println("----  variable  ----  |  ----  value  ----");
@@ -67,7 +69,7 @@ public class Parser {
 				index++;
 			}
 		}
-		
+		result.put("result",value_result);
 		return result;
 	}
 	
@@ -236,7 +238,7 @@ public class Parser {
 	 * 布尔表达式
 	 * @param index
 	 * @return
-	 * @throws Exception(只实现了 Number == )
+	 * @throws Exception
 	 */
 	private Map<String, String> BoolExpr(int index) throws Exception{
 		this.temp_map = initResult();

@@ -12,13 +12,15 @@ public class jar_source {
     public static final char EOF = (char) 0;
     //源程序reader
     private String string;
-    private String line;
     private int currentPos;                   // 当前行相对位置，不是整个文件的offset！！
     public jar_source(String s)
     {
         this.currentPos = 0;  // 设置为-2表示文件一行都没有读，后面的判断可以根据是否等于-2读文件第一行。
         this.string = s;
 
+    }
+    public String getString(){
+        return this.string;
     }
     public int getPosition(){
         return this.currentPos;

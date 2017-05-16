@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
@@ -303,8 +305,12 @@ public class Scanner {
 		}	
 	}
 
-	public ArrayList<Token> Scan(jar_source source) throws Exception{
+	public Map<String,String> Scan(jar_source source) throws Exception{
 		char curChar = source.currentChar();
+		Map<String,String> parse = new HashMap<String,String>(){{put("execute_result", "");put("result", "");put("error", "");put("index", "");put("value","");}};;
+		Map<String,String> result = new HashMap<String,String>();
+		result.put("input",source.getString());
+		String value_string ="";
 		while(curChar != '~'){
 			/**
 			 * @判断是否是Variable(同时也可能为if_grammar、Bool、EndSymbol)
@@ -548,7 +554,12 @@ public class Scanner {
 						System.out.println(t.type + "    " + t.value);
 					}
 					Parser parser = new Parser(tks);
-					parser.parse();
+					parse = parser.parse();
+					value_string += parse.get("result")+" ";
+					result.put("error",parse.get("error"));
+					result.put("variable",getVariables());
+
+
 					tks = new ArrayList<Token>();
 					System.out.println("tokens re initialize");
 				}
@@ -558,10 +569,12 @@ public class Scanner {
 			}
 
 
-			System.out.println("error3" + "    " + curChar);
-			curChar = source.nextChar();
+			result.put("error","invalid input: "+String.valueOf(curChar));
+			result.put("variables",getVariables());
+			break;
 		}
-		return null;
+		result.put("value",value_string);
+		return result;
 	}
 
 	/**
@@ -591,5 +604,13 @@ public class Scanner {
 			this.curType = Type.Space;
 		}
 		
+	}
+
+	public String getVariables(){
+		String v = "    Variable    |    value    \n";
+		for (String key:compile.global_float_variable.keySet()){
+			v += "    "+key       +"    |    "+compile.global_float_variable.get(key)+"\n";
+		}
+		return v;
 	}
 }
