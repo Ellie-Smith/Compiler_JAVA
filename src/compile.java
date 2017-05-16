@@ -17,27 +17,32 @@ public class compile {
 	public Map<String, String> getResult(){
 		return result;
 	}
-	public void run() throws Exception{
-		jar_source j_source = new jar_source("a = 1\n");
+	public void run(String s) throws Exception{
+		jar_source j_source = new jar_source(s+"\n");
 
 		Scanner scanner = new Scanner();
 //		scanner.Scan(source);
 		result = scanner.Scan(j_source);
+//        for (String key:result.keySet()){
+//            System.out.println(key+":  "+result.get(key));
+//        }
 	}
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		Source source = new Source(br);
-		jar_source j_source = new jar_source("a = 123; b = 12\n");
-
-		Scanner scanner = new Scanner();
-//		scanner.Scan(source);
-		Map<String,String> rr = scanner.Scan(j_source);
-		for (String key:rr.keySet()){
-			System.out.println(key+":  "+rr.get(key));
-		}
+//		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+//		Source source = new Source(br);
+//		jar_source j_source = new jar_source("a = 123; b = 12\n");
+//
+//		Scanner scanner = new Scanner();
+////		scanner.Scan(source);
+//		Map<String,String> rr = scanner.Scan(j_source);
+//		for (String key:rr.keySet()){
+//			System.out.println(key+":  "+rr.get(key));
+//		}
+        compile c= new compile();
+//        c.run();
 
 	}
 }

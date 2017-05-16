@@ -9,11 +9,11 @@
  * @author LH
  */
 public class NewJFrame extends javax.swing.JFrame {
-
+    private compile c = new compile();
     /**
      * Creates new form NewJFrame
      */
-    public NewJFrame() {
+    public NewJFrame(){
         initComponents();
     }
 
@@ -24,7 +24,7 @@ public class NewJFrame extends javax.swing.JFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents(){
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -47,13 +47,18 @@ public class NewJFrame extends javax.swing.JFrame {
         jButton1.setText("确认");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                try{
+                    jButton1ActionPerformed(evt);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
             }
         });
 
         jLabel2.setText("变量：");
 
-        jTextArea2.setColumns(20);
+        jTextArea2.setColumns(30);
         jTextArea2.setRows(5);
         jScrollPane2.setViewportView(jTextArea2);
 
@@ -101,11 +106,20 @@ public class NewJFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         String text = jTextField1.getText();
+        c.run(text);
         jTextField1.setText(null);
-        jTextArea1.append(">>> " + text + "\n");
+
+        jTextArea2.setText(c.result.get("variable"));
+
+        String [] results = c.result.get("value").split("@");
+        String show = ">>>" + c.result.get("input");
+        for (String line:results){
+            show += line + "\n";
+        }
+        jTextArea1.append(show);
 
     }//GEN-LAST:event_jButton1ActionPerformed
 

@@ -555,7 +555,7 @@ public class Scanner {
 					}
 					Parser parser = new Parser(tks);
 					parse = parser.parse();
-					value_string += parse.get("result")+" ";
+					value_string += parse.get("result")+"@";
 					result.put("error",parse.get("error"));
 					result.put("variable",getVariables());
 

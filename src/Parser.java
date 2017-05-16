@@ -35,7 +35,14 @@ public class Parser {
 		while (index < tokens.size()){
 			if(tokens.get(index).type==Scanner.Type.EndSymbol && sentence.size()>0){
 				result = parseSentence(0);
-				value_result += result.get("result")+" ";
+				System.out.println("1"+result.get("error"));
+				System.out.println("2"+result.get("value"));
+				System.out.println("3"+result.get("result"));
+				System.out.println("4"+result.get("execute_result"));
+				if(result.get("result").equals("")){
+					value_result += result.get("error");
+				}
+				value_result += result.get("result")+"@";
 				if (result.get("error")=="SUCCESS" && result.get("execute_result").equals("")){
 					System.out.println("-------------------------------------------");
 					System.out.println("----  variable  ----  |  ----  value  ----");
@@ -90,8 +97,8 @@ public class Parser {
 				result.put("result","");
 				result.put("error","SUCCESS");
 			}else{
-				System.out.println("error:  it is not a leagal sentence at index " + sent_index);
-				System.exit(0);
+				result.put("error","error:  it is not a leagal sentence at index " + sent_index);
+
 			}
 			return result;
 		}
@@ -156,10 +163,9 @@ public class Parser {
 			return result;
 		}else{
 				for(Token t:sentence){
-					System.out.print(t.value+" ");
+					System.out.print(t.value+"@");
 				}
-				System.out.println("error1:  it is not a leagal sentence at index " + sent_index1);
-				System.exit(0);
+				result.put("error","error1:  it is not a leagal sentence at index " + sent_index1);
 		}
 		return result;
 	}
