@@ -607,9 +607,9 @@ public class Scanner {
 	}
 
 	public String getVariables(){
-		String v = "    Variable    |    value    \n";
+		String v = "    Variable    :    value    \n";
 		for (String key:compile.global_float_variable.keySet()){
-			v += "    "+key       +"    |    "+compile.global_float_variable.get(key)+"\n";
+			v += "    "+key+"    :    "+compile.global_float_variable.get(key)+"\n";
 		}
 		return v;
 	}

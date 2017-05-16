@@ -40,9 +40,13 @@ public class Parser {
 				System.out.println("3"+result.get("result"));
 				System.out.println("4"+result.get("execute_result"));
 				if(result.get("result").equals("")){
-					value_result += result.get("error");
+					value_result += result.get("error")+"@";
 				}
-				value_result += result.get("result")+"@";
+				if(!result.get("execute_result").equals("")){
+					value_result += result.get("execute_result")+"@";
+				}else {
+					value_result += result.get("result") + "@";
+				}
 				if (result.get("error")=="SUCCESS" && result.get("execute_result").equals("")){
 					System.out.println("-------------------------------------------");
 					System.out.println("----  variable  ----  |  ----  value  ----");
@@ -155,7 +159,9 @@ public class Parser {
 
 			String value = ArithExpr(sent_index1).get("result");
 			String execute_result = ArithExpr(sent_index1).get("execute_result");
-			compile.global_float_variable.put(variable,Float.parseFloat(value));
+			if(execute_result.equals("")) {
+				compile.global_float_variable.put(variable, Float.parseFloat(value));
+			}
 			result.put("error", "SUCCESS");
 			result.put("result", value);
 			result.put("execute_result",execute_result);
@@ -227,6 +233,7 @@ public class Parser {
 						this.temp_map.put("execute_result",sentence.get(index).value+" may not initial.");
 					}
 				}catch (Exception e){
+					System.out.println("indexxxxx1");
 					e.printStackTrace();
 				}
 			}else{

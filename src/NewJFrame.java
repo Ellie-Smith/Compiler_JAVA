@@ -109,17 +109,23 @@ public class NewJFrame extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         String text = jTextField1.getText();
-        c.run(text);
-        jTextField1.setText(null);
-
-        jTextArea2.setText(c.result.get("variable"));
-
-        String [] results = c.result.get("value").split("@");
-        String show = ">>>" + c.result.get("input");
-        for (String line:results){
-            show += line + "\n";
+        try{
+            c.run(text);
+        }catch (Exception e){
+            c.result.put("input",text+"\n");
+            c.result.put("value","invalid input.");
+        }finally {
+            jTextField1.setText(null);
+            jTextArea2.setText(c.result.get("variable"));
+            String [] results = c.result.get("value").split("@");
+            String show = ">>>" + c.result.get("input");
+            for (String line:results){
+                show += line + "\n";
+            }
+            jTextArea1.append(show);
         }
-        jTextArea1.append(show);
+
+
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
