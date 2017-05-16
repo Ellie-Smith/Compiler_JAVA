@@ -22,7 +22,12 @@ public class compile {
 
 		Scanner scanner = new Scanner();
 //		scanner.Scan(source);
-		result = scanner.Scan(j_source);
+		try {
+			result = scanner.Scan(j_source);
+		}catch(Exception e){
+			result.put("input",s+"\n");
+			result.put("value","invalid input.");
+		}
 //        for (String key:result.keySet()){
 //            System.out.println(key+":  "+result.get(key));
 //        }

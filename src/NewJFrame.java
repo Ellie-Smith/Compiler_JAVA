@@ -4,12 +4,14 @@
  * and open the template in the editor.
  */
 
+import java.util.HashMap;
+
 /**
  *
  * @author LH
  */
 public class NewJFrame extends javax.swing.JFrame {
-    private compile c = new compile();
+
     /**
      * Creates new form NewJFrame
      */
@@ -108,6 +110,7 @@ public class NewJFrame extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        compile c = new compile();
         String text = jTextField1.getText();
         try{
             c.run(text);
@@ -123,6 +126,7 @@ public class NewJFrame extends javax.swing.JFrame {
                 show += line + "\n";
             }
             jTextArea1.append(show);
+            c.result = new HashMap<String,String>(){{put("value", "");put("result", "");put("error", "");put("index", "");put("execute_result","");}};
         }
 
 
