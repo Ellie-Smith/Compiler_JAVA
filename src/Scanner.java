@@ -160,12 +160,25 @@ public class Scanner {
 				this.curType = Type.assign_oper;
 				char c = curChar;
 				curChar = source.nextChar();
-				if((c=='!'||c=='='||c=='<'||c=='>') && curChar=='='){
+				if((c=='!'||c=='=') && curChar=='='){
 					this.token += curChar;
 					this.curType = Type.compare_oper;
 					curChar = source.nextChar();
 				}else if(c=='!'||c=='<'||c=='>'){
 					this.curType = Type.compare_oper;
+				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			if(curChar=='<' || curChar=='>'){
+				this.token += curChar;
+				this.curType = Type.compare_oper;
+				char c = curChar;
+				curChar = source.nextChar();
+				if((c=='<'||c=='>') && curChar=='='){
+					this.token += curChar;
+					this.curType = Type.compare_oper;
+					curChar = source.nextChar();
 				}
 				addToken(this.curType, this.token);
 				continue;
@@ -271,9 +284,9 @@ public class Scanner {
 				
 				//若为空，则到了句尾，解析这条语句
 				if(this.curType == Type.EndSymbol){
-//					for(Token t:tks){
-//						System.out.println(t.type + "    " + t.value);
-//					}
+					for(Token t:tks){
+						System.out.println(t.type + "    " + t.value);
+					}
 					Parser parser = new Parser(tks);
 					parser.parse();
 					tks = new ArrayList<Token>();

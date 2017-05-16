@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.concurrent.atomic.DoubleAccumulator;
 
 
 /**
@@ -60,9 +60,12 @@ public class Parser {
 					System.err.println(result.get("error"));
 				}
 				sentence = new ArrayList<Token>();
+				index++;
+				continue;
+			}else {
+				sentence.add(tokens.get(index));
+				index++;
 			}
-			sentence.add(tokens.get(index));
-			index++;
 		}
 		
 		return result;
@@ -103,6 +106,9 @@ public class Parser {
 			}else if(t.value.equals("if")){
 				grammar_type = "if sentence";
 				break;
+			}else if(t.type==Scanner.Type.compare_oper){
+				grammar_type = "bool";
+				break;
 			}
 		}
 
@@ -114,7 +120,10 @@ public class Parser {
 		if(grammar_type.equals("if sentence")){
 			return IfSentence(sent_index1);
 		}
-
+		//bool expression
+		if(grammar_type.equals("bool")){
+			return BoolExpr(sent_index1);
+		}
 
 		//Variable = []
 		if(grammar_type.equals("assign") && sentence.size()-sent_index1>=3 && sentence.get(sent_index1).type == Scanner.Type.Variable &&
@@ -242,6 +251,7 @@ public class Parser {
 		}
 		index = Integer.parseInt(left.get("index"));
 		if(sentence.get(index).type == Scanner.Type.compare_oper){
+			String oper = sentence.get(index).value;
 			index++;
 			Map<String,String> right = ArithExpr(index);
 			if (!right.get("error").equals("SUCCESS")){
@@ -249,14 +259,67 @@ public class Parser {
 			}else if(right.get("error").equals("SUCCESS") && !right.get("execute_result").equals("")){
 				this.temp_map.put("error","variable may not initialize.");
 			}else{
-
-				if (left.get("result").equals(right.get("result"))){
-					this.temp_map.put("value","true");
-					this.temp_map.put("error","SUCCESS");
-				}else{
-					this.temp_map.put("value","false");
-					this.temp_map.put("error","SUCCESS");
+				this.temp_map.put("error","SUCCESS");
+				switch (oper) {
+					case "==":
+						if (left.get("result").equals(right.get("result"))){
+							this.temp_map.put("value","true");
+							this.temp_map.put("result","true");
+						}else{
+							this.temp_map.put("value","false");
+							this.temp_map.put("result","false");
+						}
+						break;
+					case "!=":
+						if (!left.get("result").equals(right.get("result"))){
+							this.temp_map.put("value","true");
+							this.temp_map.put("result","true");
+						}else{
+							this.temp_map.put("value","false");
+							this.temp_map.put("result","false");
+						}
+						break;
+					case ">":
+						if (Double.parseDouble(left.get("result")) > Double.parseDouble(right.get("result"))){
+							this.temp_map.put("value","true");
+							this.temp_map.put("result","true");
+						}else{
+							this.temp_map.put("value","false");
+							this.temp_map.put("result","false");
+						}
+						break;
+					case "<":
+						if (Double.parseDouble(left.get("result")) < Double.parseDouble(right.get("result"))){
+							this.temp_map.put("value","true");
+							this.temp_map.put("result","true");
+						}else{
+							this.temp_map.put("value","false");
+							this.temp_map.put("result","false");
+						}
+						break;
+					case ">=":
+						if (Double.parseDouble(left.get("result")) >= Double.parseDouble(right.get("result"))){
+							this.temp_map.put("value","true");
+							this.temp_map.put("result","true");
+						}else{
+							this.temp_map.put("value","false");
+							this.temp_map.put("result","false");
+						}
+						break;
+					case "<=":
+						if (Double.parseDouble(left.get("result")) <= Double.parseDouble(right.get("result"))){
+							this.temp_map.put("value","true");
+							this.temp_map.put("result","true");
+						}else{
+							this.temp_map.put("value","false");
+							this.temp_map.put("result","false");
+						}
+						break;
+					default:
+						this.temp_map.put("error","cannot recognize oper: "+ oper);
 				}
+
+
 
 			}
 
