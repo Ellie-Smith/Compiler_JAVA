@@ -19,10 +19,11 @@ public class compile {
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		Source source = new Source(br);
+		jar_source j_source = new jar_source("a = 1\n");
 		
 		Scanner scanner = new Scanner();
-		scanner.Scan(source);
-
+//		scanner.Scan(source);
+		scanner.Scan(j_source);
 	}
 }
 

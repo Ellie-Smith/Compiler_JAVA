@@ -302,7 +302,268 @@ public class Scanner {
 			curChar = source.nextChar();
 		}	
 	}
-	
+
+	public ArrayList<Token> Scan(jar_source source) throws Exception{
+		char curChar = source.currentChar();
+		while(curChar != '~'){
+			/**
+			 * @判断是否是Variable(同时也可能为if_grammar、Bool、EndSymbol)
+			 * Variable -> letter(suffix | null)
+			 * suffix -> (letter | digit | _ )+
+			 * letter -> A-Z | a-z
+			 * digit -> 0-9
+			 */
+			if((curChar>='a' && curChar<='z') || (curChar>='A' && curChar<='Z')){
+				while((curChar>='a' && curChar<='z') || (curChar>='A' && curChar<='Z')
+						|| (curChar>='0' && curChar<='9') || curChar=='_'){
+					this.token += curChar;
+					this.curType = Type.Variable;
+					curChar = source.nextChar();
+				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			//若当前字符为空格，跳过
+			if(curChar == ' '){
+				curChar = source.nextChar();
+				continue;
+			}
+			/**
+			 * 判断是否是整数或实数
+			 * Number -> integral(fraction | null)(exponent | null)
+			 * fraction -> .integral
+			 * exponent -> (E | e)(+ | - | null)integral
+			 * integral -> digit+
+			 * digit -> 0-9
+			 */
+			if(curChar>='0' && curChar<='9'){
+				while(curChar>='0' && curChar<='9'){
+					this.token += curChar;
+					this.curType = Type.Number;
+					curChar = source.nextChar();
+				}
+				if(curChar=='.'){
+					this.token += curChar;
+					curChar = source.nextChar();
+					while(curChar>='0' && curChar<='9'){
+						this.token += curChar;
+						this.curType = Type.Number;
+						curChar = source.nextChar();
+					}
+				}
+				if(curChar=='E' || curChar=='e'){
+					this.token += curChar;
+					curChar = source.nextChar();
+					if(curChar=='+' || curChar=='-'){
+						this.token += curChar;
+						curChar = source.nextChar();
+					}
+					if(curChar>='0' && curChar<='9'){
+						while(curChar>='0' && curChar<='9'){
+							this.token += curChar;
+							this.curType = Type.Number;
+							curChar = source.nextChar();
+						}
+					}
+					else{
+						System.out.println("error" + "    " + curChar);
+					}
+				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			/**
+			 * 判断是否是实数(.123)
+			 * Number -> .integral
+			 * integral -> digit+
+			 * digit -> 0-9
+			 */
+			if(curChar=='.'){
+				this.token += curChar;
+				this.curType = Type.Number;
+				curChar = source.nextChar();
+				if(curChar>='0' && curChar<='9'){
+					while(curChar>='0' && curChar<='9'){
+						this.token += curChar;
+						this.curType = Type.Number;
+						curChar = source.nextChar();
+					}
+				}
+				else{
+					System.out.println("error" + "    " + curChar);
+				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			/**
+			 * 判断是否是运算操作符
+			 * oper -> + | - | * | / | ++ | -- | ^
+			 */
+			if(curChar=='+' || curChar=='-' || curChar=='*' || curChar=='/' || curChar=='^'){
+				this.token += curChar;
+				this.curType = Type.oper;
+				char c = curChar;
+				curChar = source.nextChar();
+//				if((c=='+' && curChar=='+') || (c=='-' && curChar=='-')){
+//					this.token += curChar;
+//					this.curType = Type.oper;
+//					curChar = source.nextChar();
+//				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			/**
+			 * 判断是否是比较操作符或赋值操作符
+			 */
+			if(curChar=='!' || curChar=='='){
+				this.token += curChar;
+				this.curType = Type.assign_oper;
+				char c = curChar;
+				curChar = source.nextChar();
+				if((c=='!'||c=='=') && curChar=='='){
+					this.token += curChar;
+					this.curType = Type.compare_oper;
+					curChar = source.nextChar();
+				}else if(c=='!'||c=='<'||c=='>'){
+					this.curType = Type.compare_oper;
+				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			if(curChar=='<' || curChar=='>'){
+				this.token += curChar;
+				this.curType = Type.compare_oper;
+				char c = curChar;
+				curChar = source.nextChar();
+				if((c=='<'||c=='>') && curChar=='='){
+					this.token += curChar;
+					this.curType = Type.compare_oper;
+					curChar = source.nextChar();
+				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			/**
+			 * 判断是否是bool比较符
+			 */
+			if(curChar=='&'){
+				curChar = source.nextChar();
+				if(curChar=='&'){
+					curChar = source.nextChar();
+					addToken(Type.bool_oper, "&&");
+					continue;
+				}
+				else{
+					System.out.println("error" + "    " + curChar);
+				}
+			}else if(curChar=='|'){
+				curChar = source.nextChar();
+				if(curChar=='|'){
+					curChar = source.nextChar();
+					addToken(Type.bool_oper, "||");
+					continue;
+				}
+				else{
+					System.out.println("error" + "    " + curChar);
+				}
+			}
+			/**
+			 * 判断是否是String
+			 */
+			if(curChar=='"'){
+				this.token += curChar;
+				this.curType = Type.String;
+				curChar = source.nextChar();
+				while(curChar!='"'){
+					this.token += curChar;
+					curChar = source.nextChar();
+				}
+				if(curChar=='"'){
+					this.token += curChar;
+					this.curType = Type.String;
+					curChar = source.nextChar();
+				}
+				addToken(this.curType, this.token);
+				continue;
+			}
+			/**
+			 * 判断是否是delete_symbol
+			 */
+			if(curChar=='['){
+				curChar = source.nextChar();
+				if(curChar==']'){
+					curChar = source.nextChar();
+					addToken(Type.delete_symbol, "[]");
+					continue;
+				}
+				else{
+					System.out.println("error" + "    " + curChar);
+				}
+			}
+			/**
+			 * 判断是否是左右括号
+			 */
+			if(curChar=='('){
+				addToken(Type.left_bracket, "(");
+				curChar = source.nextChar();
+				continue;
+			}else if(curChar==')'){
+				addToken(Type.right_bracket, ")");
+				curChar = source.nextChar();
+				continue;
+			}
+			/**
+			 * 判断是否是冒号、问号、感叹号或逗号
+			 */
+			if(curChar=='?'){
+				addToken(Type.question_mark, "?");
+				curChar = source.nextChar();
+				continue;
+			}else if (curChar==':'){
+				addToken(Type.colon, ":");
+				curChar = source.nextChar();
+				continue;
+			}else if (curChar=='!'){
+				addToken(Type.exclamatory_mark, "!");
+				curChar = source.nextChar();
+				continue;
+			}else if (curChar==','){
+				addToken(Type.comma, ",");
+				curChar = source.nextChar();
+				continue;
+			}
+			/**
+			 * 判断是否是句尾';'或空
+			 */
+			if(curChar==';'){
+				addToken(Type.EndSymbol, ";");
+				curChar = source.nextChar();
+				continue;
+			}else if(curChar=='\n'){
+				addToken(Type.EndSymbol, "");
+
+				//若为空，则到了句尾，解析这条语句
+				if(this.curType == Type.EndSymbol){
+					for(Token t:tks){
+						System.out.println(t.type + "    " + t.value);
+					}
+					Parser parser = new Parser(tks);
+					parser.parse();
+					tks = new ArrayList<Token>();
+					System.out.println("tokens re initialize");
+				}
+
+				curChar = source.nextChar();
+				continue;
+			}
+
+
+			System.out.println("error3" + "    " + curChar);
+			curChar = source.nextChar();
+		}
+		return null;
+	}
+
 	/**
 	 * 注册token
 	 * @param curType
