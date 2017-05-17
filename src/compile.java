@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,14 +18,16 @@ public class compile {
 	public Map<String, String> getResult(){
 		return result;
 	}
-	public void run(String s) throws Exception{
+	public void run(String s){
 		jar_source j_source = new jar_source(s+"\n");
 
 		Scanner scanner = new Scanner();
+		scanner.initial_variable();
 //		scanner.Scan(source);
 		try {
 			result = scanner.Scan(j_source);
 		}catch(Exception e){
+			System.out.println("invalid.....");
 			result.put("input",s+"\n");
 			result.put("value","invalid input.");
 		}

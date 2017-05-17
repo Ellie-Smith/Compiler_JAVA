@@ -43,6 +43,12 @@ public class Scanner {
 	private static ArrayList<Token> tks = new ArrayList<Token>();
 	private String token = "";
 	private Type curType = Type.Space;
+
+	public void initial_variable(){
+		tks = new ArrayList<Token>();
+		String token = "";
+		Type curType = Type.Space;
+	}
 	
 	public ArrayList<Token> Scan(Source source) throws Exception{
 		char curChar = source.currentChar();
