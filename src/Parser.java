@@ -124,7 +124,8 @@ public class Parser {
 				break;
 			}
 		}
-
+		System.out.println("index:  "+sent_index1);
+		System.out.println("sentence:  "+sentence);
 		//ArithExpr
 		if(grammar_type.equals("oper") && ArithExpr(sent_index1).get("error").equals("SUCCESS")){
 			return ArithExpr(sent_index1);
@@ -240,6 +241,9 @@ public class Parser {
 				s += sentence.get(index).value;
 			}
 			index++;
+		}
+		if(sentence.get(sentence.size()-1).type == Scanner.Type.right_bracket){
+			s += sentence.get(sentence.size()-1).value;
 		}
 		this.temp_map.put("result",String.valueOf(rpn.Calculator2(s)));
 		this.temp_map.put("error","SUCCESS");
