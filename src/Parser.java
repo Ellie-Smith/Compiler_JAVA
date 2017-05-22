@@ -32,6 +32,7 @@ public class Parser {
 		int index = 0;
 		String value_result = "";
 		Map<String, String> result = new HashMap<String,String>();
+		System.out.println("tokens:" + tokens.size());
 		while (index < tokens.size()){
 			if(tokens.get(index).type==Scanner.Type.EndSymbol && sentence.size()>0){
 				result = parseSentence(0);
@@ -112,7 +113,7 @@ public class Parser {
 		for(Token t:sentence){
 			if (t.type==Scanner.Type.oper){
 				grammar_type = "oper";
-				break;
+
 			}else if(t.type==Scanner.Type.assign_oper){
 				grammar_type = "assign";
 				break;
@@ -127,8 +128,8 @@ public class Parser {
 		System.out.println("index:  "+sent_index1);
 		System.out.println("sentence:  "+sentence);
 		//ArithExpr
-		if(grammar_type.equals("oper") && ArithExpr(sent_index1).get("error").equals("SUCCESS")){
-			return ArithExpr(sent_index1);
+		if(grammar_type.equals("oper") && ArithExpr(sent_index1,sentence.size()).get("error").equals("SUCCESS")){
+			return ArithExpr(sent_index1,sentence.size());
 		}
 		//IfSentence
 		if(grammar_type.equals("if sentence")){
@@ -154,12 +155,12 @@ public class Parser {
 		//Variable = ArithExpr
 		sent_index1 = sent_index;
 		if(grammar_type.equals("assign") && sentence.size()-sent_index1>=3 && sentence.get(sent_index1).type == Scanner.Type.Variable &&
-				sentence.get(++sent_index1).value.equals("=") && ArithExpr(++sent_index1).get("error").equals("SUCCESS")){
+				sentence.get(++sent_index1).value.equals("=") && ArithExpr(++sent_index1,sentence.size()).get("error").equals("SUCCESS")){
 
 			String variable = sentence.get((sent_index1-2)).value;
 
-			String value = ArithExpr(sent_index1).get("result");
-			String execute_result = ArithExpr(sent_index1).get("execute_result");
+			String value = ArithExpr(sent_index1,sentence.size()).get("result");
+			String execute_result = ArithExpr(sent_index1,sentence.size()).get("execute_result");
 			if(execute_result.equals("")) {
 				compile.global_float_variable.put(variable, Float.parseFloat(value));
 			}
@@ -220,11 +221,11 @@ public class Parser {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<String, String> ArithExpr(int index) throws Exception{
+	private Map<String, String> ArithExpr(int index,int end_index) throws Exception{
 		this.temp_map = initResult();
 		String s = "";
-		while(index < sentence.size() && sentence.get(index).type != Scanner.Type.EndSymbol && sentence.get(index).type != Scanner.Type.if_grammar
-				&& sentence.get(index).type != Scanner.Type.compare_oper && sentence.get(index).type != Scanner.Type.right_bracket){
+		while(index < end_index && sentence.get(index).type != Scanner.Type.EndSymbol && sentence.get(index).type != Scanner.Type.if_grammar
+				&& sentence.get(index).type != Scanner.Type.compare_oper){
 			if (sentence.get(index).type == Scanner.Type.Variable){
 				try{
 					if (compile.global_float_variable.keySet().contains(sentence.get(index).value)){
@@ -242,9 +243,11 @@ public class Parser {
 			}
 			index++;
 		}
-		if(sentence.get(sentence.size()-1).type == Scanner.Type.right_bracket){
-			s += sentence.get(sentence.size()-1).value;
-		}
+
+//		if(sentence.get(sentence.size()-1).type == Scanner.Type.right_bracket){
+//			s += sentence.get(sentence.size()-1).value;
+//		}
+		System.out.println(s);
 		this.temp_map.put("result",String.valueOf(rpn.Calculator2(s)));
 		this.temp_map.put("error","SUCCESS");
 		this.temp_map.put("index",String.valueOf(index));
@@ -260,7 +263,7 @@ public class Parser {
 	private Map<String, String> BoolExpr(int index) throws Exception{
 		this.temp_map = initResult();
 		String s = "";
-		Map<String,String> left = ArithExpr(index);
+		Map<String,String> left = ArithExpr(index,sentence.size());
 		if (!left.get("error").equals("SUCCESS")){
 			this.temp_map.put("error","expect an ArithExpr at index " + index);
 			return this.temp_map;
@@ -269,10 +272,14 @@ public class Parser {
 			return this.temp_map;
 		}
 		index = Integer.parseInt(left.get("index"));
+		System.out.println("ssssss:"+index);
 		if(sentence.get(index).type == Scanner.Type.compare_oper){
 			String oper = sentence.get(index).value;
+			System.out.println("ddddd"+to_index(index,")"));
+			System.out.println("oper: "+oper);
 			index++;
-			Map<String,String> right = ArithExpr(index);
+			Map<String,String> right = ArithExpr(index,to_index(index,")")-1);
+			System.out.println("sfadfaf: "+ right.keySet()+right.values());
 			if (!right.get("error").equals("SUCCESS")){
 				this.temp_map.put("error","expect an ArithExpr at index " + index);
 			}else if(right.get("error").equals("SUCCESS") && !right.get("execute_result").equals("")){
@@ -352,7 +359,7 @@ public class Parser {
 
 
 	private int to_index(int index,String s){
-		while(!sentence.get(index).value.toLowerCase().equals(s)){
+		while(index <sentence.size() && !sentence.get(index).value.toLowerCase().equals(s)){
 			index++;
 		}
 		return ++index;
