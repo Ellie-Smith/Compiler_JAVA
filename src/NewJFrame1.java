@@ -181,7 +181,7 @@ public class NewJFrame1 extends javax.swing.JFrame {
             String content = "";
             while((data = br.readLine())!=null)
             { 
-                content += data+"\n";
+                content += data+"\n"+";";
 
             }
             jTextField1.setText( content + "\n");
